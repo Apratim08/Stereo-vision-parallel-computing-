@@ -90,4 +90,4 @@ is also independent.
 dently.
 
 ## Results
-Please refer to the [PDF: CS267_Final_project.pdf](https://github.com/Apratim08/Stereo-vision-parallel-computing-/blob/main/Report%20and%20Results) for more details on the perfromance we achieved from the implementation. 
+Please refer to the [PDF: CS267_Final_project.pdf](https://github.com/Apratim08/Stereo-vision-parallel-computing-/blob/main/Final%20Report%20and%20Results.pdf) for more details on the perfromance we achieved from the implementation. 
