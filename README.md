@@ -8,120 +8,26 @@ April 2024
 
 Stereo vision (depth perception using two cameras) plays a crucial role in self-driving cars by building a 3D understanding of the surrounding environment. 
 However, processing these images in real-time, essential to quick reactions, can be computationally expensive, presenting a critical bottleneck to self-driving car technology.
-
-One possible application of parallel computing that we will work on for the course project is the
-
-calculation of Disparity Maps for Stereo Vision. Calculating the disparity map, which represents
-
-the diﬀerences in image location of the same 3D point from two cameras, is the core of stereo vision.
-
-The algorithm has a huge potential for parallelism, and the speed at which the algorithm runs will
-
+One possible application of parallel computing that we will work on for the course project is the calculation of Disparity Maps for Stereo Vision. Calculating the disparity map, which represents the diﬀerences in image location of the same 3D point from two cameras, is the core of stereo vision. The algorithm has a huge potential for parallelism, and the speed at which the algorithm runs will
 be extremely useful in real-time perception tasks in autonomous systems, enabling the processing of
-
 high-resolution images and videos.
-
-Since parallel computing can be applied to algorithm steps that are not interdependent, such
-
-as analyzing diﬀerent pixels of an image, we can distribute this workload across multiple cores or
-
-processors. We will explore parallelization techniques like SIMD, OpenMP, OpenMP SIMD, CUDA,
-
-CUDA SIMD, parallelizing on the CPU and GPU, bench-marking the algorithms, and comparing
-
-the performance improvements.
-
-Naively, we expect that adopting parallelization techniques will speed up the performance pro-
-
-portionately to the number of cores or processors used.
+Since parallel computing can be applied to algorithm steps that are not interdependent, such as analyzing diﬀerent pixels of an image, we can distribute this workload across multiple cores or processors. We will explore parallelization techniques like SIMD, OpenMP, OpenMP SIMD, CUDA, CUDA SIMD, parallelizing on the CPU and GPU, bench-marking the algorithms, and comparing the performance improvements. Naively, we expect that adopting parallelization techniques will speed up the performance proportionately to the number of cores or processors used.
 
 ## Key prior work
 
-[1] Detailed eﬀorts to optimize the computation of disparity maps, which are crucial for deriving
-
-depth information from stereo camera images. Spryn explores several parallelization strategies to
-
-enhance performance, including multi-threading with OpenMP and SIMD instructions, and leverag-
-
-ing GPU compute capabilities through CUDA and OpenCL frameworks. [2] Discusses a GPU-based
-
-parallel algorithm for generating disparity maps. The algorithm aims to reduce computational costs
-
-and improve real-time computer vision performance. By minimizing redundant operations and ap-
-
-plying a median ﬁlter for noise reduction, the study achieves a signiﬁcant speedup, demonstrating
-
-the potential of GPU for eﬃcient stereo matching and disparity map calculation in real-time appli-
-
-cations with low computing cost constraints. [3] Aims to parallelize disparity map creation using
-
-the CPU and GPU, focusing on a block-matching algorithm. It provides a Python implementation
-
-for CPU and PyCUDA for GPU, with the GPU version achieving signiﬁcant speed improvements.
-
-This work builds on the concepts of disparity map generation and optimization through hardware
-
-acceleration.
+[1] Detailed eﬀorts to optimize the computation of disparity maps, which are crucial for deriving depth information from stereo camera images. Spryn explores several parallelization strategies to enhance performance, including multi-threading with OpenMP and SIMD instructions, and leveraging GPU compute capabilities through CUDA and OpenCL frameworks. [2] Discusses a GPU-based parallel algorithm for generating disparity maps. The algorithm aims to reduce computational costs and improve real-time computer vision performance. By minimizing redundant operations and applying a median ﬁlter for noise reduction, the study achieves a signiﬁcant speedup, demonstrating the potential of GPU for eﬃcient stereo matching and disparity map calculation in real-time applications with low computing cost constraints. [3] Aims to parallelize disparity map creation using the CPU and GPU, focusing on a block-matching algorithm. It provides a Python implementation for CPU and PyCUDA for GPU, with the GPU version achieving signiﬁcant speed improvements. This work builds on the concepts of disparity map generation and optimization through hardware acceleration.
 
 ## 2 Method
 
-Computing depth from a pair of images in a stereo camera involves matching each pixel in the image
-
-from the left camera with the corresponding pixel in the right camera. The further apart the pixels
-
-are in terms of X-Y coordinates, the closer the object is to the camera. We used a block-matching
-
-algorithm by converting input images into blocks of arrays, computing the disparity map for a given
-
-block in parallel, and then converting the disparity map to the appropriate data type and scale.
-
-We collected data on our own for testing. We conducted multiple tests, ﬁrst on images of varying
-
-resolutions, and then videos of varying resolutions of the UC Berkeley Campus. We captured the
-
-images and videos on a smartphone with two cameras (iPhone 15), simultaneously capturing images
-
-from each camera as the left and right stereo images.
-
-To process the video, we used the OpenCV library. We split the videos into multiple frames,
-
-and then, similar to how we processed images, we resized and converted them to mean-adjusted
-
-grayscale images. Then, after processing the frames, we convert the disparity maps of each frame
-
-back to a video and store them in an output folder.
-
-Beginning with no parallelization, we explore parallelizing via multi-threading using the OpenMP
-
-library, using Single Instruction Multiple Data (SIMD) instructions, and CUDA.
+Computing depth from a pair of images in a stereo camera involves matching each pixel in the image from the left camera with the corresponding pixel in the right camera. The further apart the pixels are in terms of X-Y coordinates, the closer the object is to the camera. We used a block-matching algorithm by converting input images into blocks of arrays, computing the disparity map for a given block in parallel, and then converting the disparity map to the appropriate data type and scale. We collected data on our own for testing. We conducted multiple tests, ﬁrst on images of varying resolutions, and then videos of varying resolutions of the UC Berkeley Campus. We captured the images and videos on a smartphone with two cameras (iPhone 15), simultaneously capturing images from each camera as the left and right stereo images. To process the video, we used the OpenCV library. We split the videos into multiple frames, and then, similar to how we processed images, we resized and converted them to mean-adjusted grayscale images. Then, after processing the frames, we convert the disparity maps of each frame back to a video and store them in an output folder. Beginning with no parallelization, we explore parallelizing via multi-threading using the OpenMP library, using Single Instruction Multiple Data (SIMD) instructions, and CUDA.
 
 ### 2.1 Algorithm
 
-The further apart the pixels are in terms of their coordinates, the closer the object is to the observer.
+The further apart the pixels are in terms of their coordinates, the closer the object is to the observer. Pixels with larger disparity values (closer to the camera) are shown in a lighter color in a disparity map. In our experiments, we used the block-matching algorithm to calculate our disparity map. The algorithm takes a two step process:
 
-Pixels with larger disparity values (closer to the camera) are shown in a lighter color in a disparity
+1. In the ﬁrst step, it considers a square block around each pixel in the left image, comparing this square block to various locations in the right image. A loss function is then calculated for each block position. If a perfect match is found, the loss function returns zero. However, due to diﬀerences in conditions (i.e., lighting), exact matches are rare. In such instances, the pixel’s position can be estimated by ﬁtting a parabola to the three nearest matching points.
 
-map.
-
-In our experiments, we used the block-matching algorithm to calculate our disparity map. The
-
-algorithm takes a two step process:
-
-1\. In the ﬁrst step, it considers a square block around each pixel in the left image, comparing
-
-this square block to various locations in the right image. A loss function is then calculated
-
-for each block position. If a perfect match is found, the loss function returns zero. However,
-
-due to diﬀerences in conditions (i.e., lighting), exact matches are rare. In such instances, the
-
-pixel’s position can be estimated by ﬁtting a parabola to the three nearest matching points.
-
-2\. In the second step, it calculates the distance between the best-match pixels giving the disparity
-
-score.
-
-We will use a standard loss function of the Sum of Absolute Diﬀerences (Equation [1)](#br2)[ ](#br2)for our
+2. In the second step, it calculates the distance between the best-match pixels giving the disparity score. We will use a standard loss function of the Sum of Absolute Diﬀerences (Equation [1)](#br2)[ ](#br2) for our
 
 purposes.
 
