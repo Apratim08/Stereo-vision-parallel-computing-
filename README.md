@@ -90,7 +90,7 @@ is also independent.
 dently.
 
 ## Results
-Please refer to the [PDF: CS267_Final_project.pdf]() for more details on the perfromance we achieved from the implementation. 
+Please refer to the [PDF: CS267_Final_project.pdf](https://github.com/Apratim08/Stereo-vision-parallel-computing-/blob/main/Report%20and%20Results) for more details on the perfromance we achieved from the implementation. 
 
 <https://github.com/AbhyudayPuri/Disparity_Map_Stereo_Vision>.
 
