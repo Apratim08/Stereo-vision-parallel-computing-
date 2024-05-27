@@ -1,36 +1,13 @@
-## CS267 Final Project - Parallelizing Stereo Vision for Driverless
+# CS267 Final Project - Parallelizing Stereo Vision for Driverless Applications
 
-Applications
-
-Apratim Banerjee
-
-MEng EECS
-
-apratimbanerjee@berkeley.edu terence.neo@berkeley.edu
-
-Terence Neo
-
-MEng EECS
-
-Zeid Solh
-
-MEng EECS
-
-zeidsolh@berkeley.edu
+Contributors: Apratim Banerjee, Terence Neo, Zeid Solh
 
 April 2024
 
-1 Introduction
+## 1 Introduction
 
-View the code at: [GitHub](https://github.com/zeidsolh/cs267finalproject)[ ](https://github.com/zeidsolh/cs267finalproject)[Repo](https://github.com/zeidsolh/cs267finalproject).
-
-Stereo vision (depth perception using two cameras) plays a crucial role in self-driving cars by
-
-building a 3D understanding of the surrounding environment. However, processing these images
-
-in real-time, essential to quick reactions, can be computationally expensive, presenting a critical
-
-bottleneck to self-driving car technology.
+Stereo vision (depth perception using two cameras) plays a crucial role in self-driving cars by building a 3D understanding of the surrounding environment. 
+However, processing these images in real-time, essential to quick reactions, can be computationally expensive, presenting a critical bottleneck to self-driving car technology.
 
 One possible application of parallel computing that we will work on for the course project is the
 
@@ -58,7 +35,7 @@ Naively, we expect that adopting parallelization techniques will speed up the pe
 
 portionately to the number of cores or processors used.
 
-1\.1 Key prior work
+## Key prior work
 
 [1] Detailed eﬀorts to optimize the computation of disparity maps, which are crucial for deriving
 
@@ -69,12 +46,6 @@ enhance performance, including multi-threading with OpenMP and SIMD instructions
 ing GPU compute capabilities through CUDA and OpenCL frameworks. [2] Discusses a GPU-based
 
 parallel algorithm for generating disparity maps. The algorithm aims to reduce computational costs
-
-1
-
-
-
-<a name="br2"></a> 
 
 and improve real-time computer vision performance. By minimizing redundant operations and ap-
 
@@ -92,7 +63,7 @@ This work builds on the concepts of disparity map generation and optimization th
 
 acceleration.
 
-2 Method
+## 2 Method
 
 Computing depth from a pair of images in a stereo camera involves matching each pixel in the image
 
@@ -124,7 +95,7 @@ Beginning with no parallelization, we explore parallelizing via multi-threading 
 
 library, using Single Instruction Multiple Data (SIMD) instructions, and CUDA.
 
-2\.1 Algorithm
+### 2.1 Algorithm
 
 The further apart the pixels are in terms of their coordinates, the closer the object is to the observer.
 
